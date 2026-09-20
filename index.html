@@ -45,6 +45,10 @@ function canGoStep(n){
 }
 function navStep(n){
   if(!canGoStep(n))return;
+  if(n===3){
+    if(!document.querySelector('#rubric .scale')) renderRubric();
+    progress();
+  }
   if(n===4)prepareReview();
   go(n);
 }
