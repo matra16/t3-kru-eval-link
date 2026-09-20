@@ -92,8 +92,21 @@ function prepareReview(){
 }
 $('to4').onclick=()=>{prepareReview();go(4);};
 $('cert').onchange=()=>{$('submit').disabled=!$('cert').checked};
-$('submit').onclick=()=>{if(!$('cert').checked)return;$('submit').disabled=true;$('msg').textContent='กำลังบันทึก...';const payload={mentor_code:S.mentor,student_id:S.student,ratings:S.ratings,certified:true,started_at:S.started,user_agent:navigator.userAgent||''};const f=$('bridgeForm');f.action=ENDPOINT;f.innerHTML='<input name="bridge_submit" value="1"><input name="payload">';f.querySelector('[name=payload]').value=JSON.stringify(payload);f.submit();setTimeout(()=>{if(S.step===4){$('msg').textContent='กำลังรอการยืนยันจากระบบ...';}},3000);};
-window.addEventListener('message',e=>{const d=e.data;if(!d||d.source!=='T3_KRU_EVAL')return;const r=d.result||{};if(r.ok){S.submitted=true;$('done').textContent='รหัสรายการ '+r.submission_id+' · คะแนน '+r.total_score+'/100 · ค่าเฉลี่ย '+Number(r.average_score).toFixed(2);go(5);}else{$('msg').textContent='บันทึกไม่สำเร็จ: '+(r.error||'unknown');$('submit').disabled=false;}});
+$('submit').onclick=async()=>{if(!$('cert').checked)return;
+  $('submit').disabled=true;
+  $('msg').textContent='กำลังบันทึกผลการประเมิน...';
+  const payload={mentor_code:S.mentor,student_id:S.student,ratings:S.ratings,certified:true,started_at:S.started,user_agent:navigator.userAgent||''};
+  try{
+    const r=await jsonp('submit',payload);
+    S.submitted=true;
+    $('done').textContent='รหัสรายการ '+r.submission_id+' · คะแนน '+r.total_score+'/100 · ค่าเฉลี่ย '+Number(r.average_score).toFixed(2);
+    $('msg').textContent='';
+    go(5);
+  }catch(err){
+    $('msg').textContent='บันทึกไม่สำเร็จ: '+String(err&&err.message||err)+' กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่';
+    $('submit').disabled=false;
+  }
+};
 (()=>{stepbar();$('school').textContent=S.boot.schoolLabel;$('certText').textContent=S.boot.certificationText;renderMentors();})();
 </script>
 </body></html>
